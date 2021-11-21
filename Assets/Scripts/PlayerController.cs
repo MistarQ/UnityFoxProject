@@ -6,6 +6,9 @@ using UnityEngine.SceneManagement;
 
 public class PlayerController : MonoBehaviour
 {
+    public Joystick joystick;
+    public Button jumpButton;
+
     [SerializeField]private Rigidbody2D rb;
     private Animator anim;
     public LayerMask ground;
@@ -23,8 +26,8 @@ public class PlayerController : MonoBehaviour
 
     private bool isHurt;
 
-    public AudioSource jumpAudio;
-    public AudioSource hurtedAudio, cherryAudio;
+    //public AudioSource jumpAudio;
+    //public AudioSource hurtedAudio, cherryAudio;
 
     public Collider2D DisColl;
 
@@ -40,12 +43,17 @@ public class PlayerController : MonoBehaviour
         coll = GetComponent<Collider2D>();
     }
 
+    public void ButtonJump() {
+        jumpPressed = true;
+    }
+
     void Update()
     {
-        if (Input.GetButtonDown("Jump") && jumpCount > 0)
-        {
-            jumpPressed = true;
-        }
+        //if (Input.GetButtonDown("Jump") && jumpCount > 0)
+        //if (joystick.Vertical >0.5f && jumpCount > 0)
+            //{
+            //jumpPressed = true;
+        //}
         CherryNum.text = Cherry.ToString();
     }
 
@@ -66,12 +74,20 @@ public class PlayerController : MonoBehaviour
 
     void GroundMovement()
     {
-        float horizontalMove = Input.GetAxisRaw("Horizontal");
+        //float horizontalMove = Input.GetAxisRaw("Horizontal");
+        float horizontalMove = joystick.Horizontal;
         rb.velocity = new Vector2(horizontalMove * speed, rb.velocity.y);
 
         if (horizontalMove != 0)
         {
-            transform.localScale = new Vector3(horizontalMove, 1, 1);
+            if (horizontalMove > 0f)
+            {
+                transform.localScale = new Vector3(1, 1, 1);
+            }
+            if (horizontalMove <0f) {
+                transform.localScale = new Vector3(-1, 1, 1);
+            }
+           
         }
         
     }
@@ -79,7 +95,7 @@ public class PlayerController : MonoBehaviour
     //跳跃
     void Jump()
     {
-
+        
         if (isGround)
         {
             jumpCount = 2;
@@ -88,7 +104,8 @@ public class PlayerController : MonoBehaviour
         if (jumpPressed && isGround)
         {
             isJump = true;
-            jumpAudio.Play();
+            //jumpAudio.Play();
+            SoundManager.instance.JumpAudio();
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
             jumpCount--;
             jumpPressed = false;
@@ -96,7 +113,8 @@ public class PlayerController : MonoBehaviour
         else if (jumpPressed && jumpCount > 0 && !isGround)
         {
             rb.velocity = new Vector2(rb.velocity.x, jumpForce);
-            jumpAudio.Play();
+            //jumpAudio.Play();
+            SoundManager.instance.JumpAudio();
             jumpCount--;
             jumpPressed = false;
         }
@@ -112,7 +130,8 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("hurt", true);
             if (hurtecd)
             {
-                hurtedAudio.Play();
+                //hurtedAudio.Play();
+                SoundManager.instance.HurtAudio();
                 hurtecd = false;
             }
             // anim.SetFloat("running", 0f);
@@ -145,16 +164,17 @@ public class PlayerController : MonoBehaviour
     {
         // 收集物品
         if (collision.tag == "Collection") {
-            cherryAudio.Play();
+            //cherryAudio.Play();
             // Destroy(collision.gameObject);
             // Cherry += 1;
+            SoundManager.instance.CherryAudio();
             collision.GetComponent<Animator>().Play("isGot");
             // CherryNum.text = Cherry.ToString();
         }
 
         if (collision.tag == "DeadLine")
         {
-            GetComponent<AudioSource>().enabled = false;
+            // GetComponent<AudioSource>().enabled = false;
             Invoke("Restart", 2f);
         }
     }
@@ -177,7 +197,7 @@ public class PlayerController : MonoBehaviour
                 rb.velocity = new Vector2(-10, rb.velocity.y);
                 isHurt = true;
             }
-            else if (transform.position.x > collision.gameObject.transform.position.x)
+            else if (transform.position.x > collision.gameObject.transform.position.x)  
             {
                 rb.velocity = new Vector2(10, rb.velocity.y);
                 isHurt = true;
@@ -203,12 +223,16 @@ public class PlayerController : MonoBehaviour
 
     //蹲下
     void Crouch() {
-        if (Input.GetButton("Crouch")) {
-            anim.SetBool("crouching", true);
+        //if (Input.GetButton("Crouch")) {
+        if (joystick.Vertical<-0.5f)
+            {
+                anim.SetBool("crouching", true);
             DisColl.enabled = false;
         }
-        if (!Input.GetButton("Crouch") && !Physics2D.OverlapCircle(CellingCheck.position, 0.2f, ground)) {
-            anim.SetBool("crouching", false);
+        //if (!Input.GetButton("Crouch") && !Physics2D.OverlapCircle(CellingCheck.position, 0.2f, ground)) {
+        if (joystick.Vertical >= -0.5f && !Physics2D.OverlapCircle(CellingCheck.position, 0.2f, ground))
+            {
+                anim.SetBool("crouching", false);
             DisColl.enabled = true;
         }
     }

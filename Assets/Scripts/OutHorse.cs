@@ -4,6 +4,19 @@ using UnityEngine;
 using UnityEngine.SceneManagement;
 public class OutHorse : MonoBehaviour
 {
+    public GameObject gameDialog;
+
+    public void OutAction()
+    {
+        if (gameDialog.active == true) {
+            SceneManager.LoadScene(SceneManager.GetActiveScene().buildIndex - 1);
+        }
+        
+        
+    }
+
+    
+
     // Start is called before the first frame update
     void Start()
     {
