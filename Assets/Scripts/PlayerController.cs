@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Photon.Pun;
 
-public class PlayerController : MonoBehaviour
+public class PlayerController : MonoBehaviourPun
 {
     public Joystick joystick;
     public Button jumpButton;
@@ -49,17 +50,29 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        //if (Input.GetButtonDown("Jump") && jumpCount > 0)
-        //if (joystick.Vertical >0.5f && jumpCount > 0)
-            //{
-            //jumpPressed = true;
-        //}
-        CherryNum.text = Cherry.ToString();
+
+        if (!photonView.IsMine && PhotonNetwork.IsConnected) {
+            return;
+        }
+
+        if (Input.GetButtonDown("Jump") && jumpCount > 0)
+        // if (joystick.Vertical >0.5f && jumpCount > 0)
+            {
+            jumpPressed = true;
+        }
+        // CherryNum.text = Cherry.ToString();
     }
 
     // Update is called once per frame
     void FixedUpdate()
     {
+
+        
+        if (!photonView.IsMine && PhotonNetwork.IsConnected)
+        {
+            return;
+        }
+
         isGround = Physics2D.OverlapCircle(groundCheck.position, 0.1f, ground);
         if (!isHurt)
         {
@@ -74,8 +87,8 @@ public class PlayerController : MonoBehaviour
 
     void GroundMovement()
     {
-        //float horizontalMove = Input.GetAxisRaw("Horizontal");
-        float horizontalMove = joystick.Horizontal;
+        float horizontalMove = Input.GetAxisRaw("Horizontal");
+        //float horizontalMove = joystick.Horizontal;
         rb.velocity = new Vector2(horizontalMove * speed, rb.velocity.y);
 
         if (horizontalMove != 0)
@@ -223,15 +236,15 @@ public class PlayerController : MonoBehaviour
 
     //蹲下
     void Crouch() {
-        //if (Input.GetButton("Crouch")) {
-        if (joystick.Vertical<-0.5f)
-            {
+        if (Input.GetButton("Crouch")) {
+        //if (joystick.Vertical<-0.5f)
+            
                 anim.SetBool("crouching", true);
             DisColl.enabled = false;
         }
-        //if (!Input.GetButton("Crouch") && !Physics2D.OverlapCircle(CellingCheck.position, 0.2f, ground)) {
-        if (joystick.Vertical >= -0.5f && !Physics2D.OverlapCircle(CellingCheck.position, 0.2f, ground))
-            {
+        if (!Input.GetButton("Crouch") && !Physics2D.OverlapCircle(CellingCheck.position, 0.2f, ground)) {
+        //if (joystick.Vertical >= -0.5f && !Physics2D.OverlapCircle(CellingCheck.position, 0.2f, ground))
+            
                 anim.SetBool("crouching", false);
             DisColl.enabled = true;
         }
